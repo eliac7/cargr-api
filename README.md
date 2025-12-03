@@ -280,4 +280,4 @@ Contributions, bug reports, and pull requests are welcome. Please open issues fo
 
 ## Contact
 
-For questions or help, open an issue on the GitHub repository or reach out to the maintainers listed in `AUTHORS.md`.
+For questions or help, open an issue on the GitHub repository.
