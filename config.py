@@ -33,3 +33,10 @@ REQUEST_SETTINGS = {
     'session_timeout': 30,
 }
 
+# Cache settings
+CACHE_SETTINGS = {
+    'filter_ttl': 3600,       # Time-to-live in seconds (1 hour)
+    'filter_maxsize': 1,      # Single cache entry for filters
+    'warm_on_startup': True,  # Pre-populate cache when server starts
+}
+
