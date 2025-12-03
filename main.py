@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager
 from typing import List
 from urllib.parse import urlencode
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi_mcp import FastApiMCP
 
 from cache import get_filter_cache, init_filter_cache
 from config import CACHE_SETTINGS
 from filter_parser import get_available_filters
-from models import Car, CarSummary
+from models import Car, CarSummary, CarSearchFilters
 from parser import parse_car_page, parse_search_results
 
 logging.basicConfig(
@@ -47,9 +48,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-
-@app.get("/api/car/{car_id}", response_model=Car)
-def get_car(car_id: str):
+@app.get("/api/car/{car_id}", response_model=Car, operation_id="get_car_details_by_id")
+async def get_car(car_id: str):
     """Get full details for a specific car listing."""
     try:
         car = parse_car_page(car_id)
@@ -61,11 +61,26 @@ def get_car(car_id: str):
         )
 
 
-@app.get("/api/search", response_model=List[CarSummary])
-def search(request: Request):
-    """Search for cars. Returns summary data (use /api/car/{id} for full details)."""
-    params = dict(request.query_params)
-    search_url = f"{SEARCH_BASE_URL}?{urlencode(params)}"
+@app.get("/api/search", response_model=List[CarSummary], operation_id="search_car_listings")
+async def search(
+    filters: CarSearchFilters = Depends()
+):
+    """
+    Search for cars using specific filters.
+    IMPORTANT: This tool requires specific IDs for fields like 'make', 'model', 'fuel_type', etc.
+    You MUST use the 'get_available_filters' tool FIRST to retrieve these valid IDs.
+    Do not guess IDs.
+    """
+    # Convert Pydantic model to dict, excluding None values
+    params = filters.model_dump(exclude_none=True)
+    
+    # Transform keys to match car.gr expectations (e.g. price_from -> price-from)
+    query_params = {}
+    for key, value in params.items():
+        new_key = key.replace('_from', '-from').replace('_to', '-to')
+        query_params[new_key] = value
+    
+    search_url = f"{SEARCH_BASE_URL}?{urlencode(query_params)}"
     
     try:
         results = list(parse_search_results(search_url))
@@ -75,8 +90,8 @@ def search(request: Request):
     return results
 
 
-@app.get("/api/filters")
-def get_filters(refresh: bool = False):
+@app.get("/api/filters", operation_id="get_available_filters")
+async def get_filters(refresh: bool = False):
     try:
         cache = get_filter_cache()
         return cache.get(force_refresh=refresh)
@@ -92,6 +107,15 @@ def get_filters(refresh: bool = False):
             status_code=503,
             detail="Could not fetch filters from source"
         )
+
+
+# MCP server integration
+mcp = FastApiMCP(
+    app,
+    name="Car.gr MCP",
+    description="MCP server for searching and retrieving car listings from car.gr",
+)
+mcp.mount_http()
 
 
 if __name__ == '__main__':

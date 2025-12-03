@@ -93,6 +93,35 @@ Once running, access:
 
 ---
 
+## MCP Server Integration
+
+This API includes a Model Context Protocol (MCP) server, allowing AI assistants (like Claude Desktop, Cursor, etc.) to directly search for cars and retrieve details using natural language.
+
+### Connecting via SSE (Recommended)
+
+To use this API with an MCP client, add the following configuration to your client's settings (e.g., `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "cargr-mcp": {
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}
+```
+
+Once connected, the AI will have access to the following tools:
+- `search_car_listings`: Search for cars using filters (requires fetching filter IDs first).
+- `get_car_details_by_id`: Get full details for a specific car listing.
+- `get_available_filters`: Retrieve valid IDs for makes, models, and other categorical fields.
+
+### Important Note for AI Usage
+
+When using the `search` tool, the AI must **first** use `get_available_filters` to look up the correct IDs for parameters like `make`, `model`, `fuel_type`, etc. Guessing IDs will likely result in empty or incorrect results.
+
+---
+
 ## API Endpoints
 
 ### 1. Get Car Details
