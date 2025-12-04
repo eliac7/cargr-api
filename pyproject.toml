@@ -1,7 +1,7 @@
 [project]
 name = "cargr-api"
 version = "0.1.0"
-description = "FastAPI based car.gr scraper and API"
+description = "Unofficial FastAPI-based API & MCP Server for scraping and accessing car listings from car.gr, the largest Greek car marketplace."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

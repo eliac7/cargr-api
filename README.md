@@ -1,6 +1,6 @@
 # Car.gr API
 
-Unofficial FastAPI-based API for scraping and accessing car listings from [car.gr](https://www.car.gr), the largest Greek car marketplace.
+Unofficial FastAPI-based API & MCP Server for scraping and accessing car listings from [car.gr](https://www.car.gr), the largest Greek car marketplace.
 
 ---
 
